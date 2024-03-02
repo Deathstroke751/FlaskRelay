@@ -73,7 +73,48 @@ def relaybr():
             sesh.cookies.update(cookies)
             response = sesh.post(link, json=payload)
         else:
-            response = requests.get(link)
+            return jsonify(error="Parameters missing"), 400
+
+    except requests.exceptions.RequestException as e:
+        return jsonify(error=str(e)), 500
+
+    content_type = response.headers.get('Content-Type', '')
+    if 'application/json' in content_type:
+        return jsonify(response.json())
+    else:
+        return response.text
+
+
+@app.route('/brinvoice')
+def invoice():
+    link = "https://www.bitrefill.com/api/accounts/invoice"
+    cart_id = request.args.get('cart_id')
+    email = request.args.get('email')
+    method = request.args.get('method')
+
+    try:
+        if cart_id and email and method:
+
+            headers = {
+                "Content-Type": "application/json",
+            }
+
+            payload = {
+                "cart_id": cart_id,
+                "email": email,
+                "isSubscribing": False,
+                "paymentMethod": method,
+                "unsealAll": False,
+                "isLifiSwap": False,
+                "is_batch": False,
+                "is_embedded": False,
+                "user_source": "web",
+                "user_source_platform": "web"
+            }
+
+            response = requests.post(link, headers=headers, json=payload)
+        else:
+            return jsonify(error="Parameters missing"), 400
 
     except requests.exceptions.RequestException as e:
         return jsonify(error=str(e)), 500
