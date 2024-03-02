@@ -1,8 +1,8 @@
-from flask import Flask, jsonify, request, session
 import requests
+import json
+from flask import Flask, request, jsonify, Response
 
 app = Flask(__name__)
-app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 
 
 @app.route('/')
@@ -19,14 +19,10 @@ def relay():
 
     try:
         if request.method == 'GET':
-            response = requests.get(link, cookies=session.get('cookies'))
+            response = requests.get(link)
         else:
-            response = requests.post(
-                link, data=request.form, cookies=session.get('cookies'))
-
+            response = requests.post(link, data=request.form)
         response.raise_for_status()
-        # Update session cookies
-        session['cookies'] = response.cookies.get_dict()
     except requests.exceptions.RequestException as e:
         return jsonify(error=str(e)), 500
 
