@@ -1,8 +1,15 @@
-from flask import Flask, jsonify, request
+import os
+import sys
+from json import loads as json_loads
+import urllib.parse
+import urllib.request
+import http.cookiejar
+from http.cookies import SimpleCookie
 import requests
+import json
+from flask import Flask, request, jsonify, Response
 
 app = Flask(__name__)
-
 
 @app.route('/')
 def index():
@@ -27,6 +34,5 @@ def relay():
     else:
         return response.text
 
-
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=6969, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
