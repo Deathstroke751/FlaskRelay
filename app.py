@@ -4,19 +4,24 @@ from flask import Flask, request, jsonify, Response
 
 app = Flask(__name__)
 
+
 @app.route('/')
 def index():
     return jsonify(message="Flask Relay Program is working!"), 200
 
 
-@app.route('/relay')
+@app.route('/relay', methods=['GET', 'POST'])
 def relay():
-    link = request.args.get('link')
+    link = request.args.get(
+        'link') if request.method == 'GET' else request.form.get('link')
     if not link:
         return jsonify(error="Link parameter is missing"), 400
 
     try:
-        response = requests.get(link)
+        if request.method == 'GET':
+            response = requests.get(link)
+        else:
+            response = requests.post(link, data=request.form)
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
         return jsonify(error=str(e)), 500
@@ -27,5 +32,6 @@ def relay():
     else:
         return response.text
 
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8800, debug=True)
+    app.run(host='0.0.0.0', port=8880, debug=True)
