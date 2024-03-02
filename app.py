@@ -12,23 +12,69 @@ def index():
 
 @app.route('/relay', methods=['GET', 'POST'])
 def relay():
-    link = request.args.get('link')
+    link = request.args.get(
+        'link') if request.method == 'GET' else request.form.get('link')
     if not link:
         return jsonify(error="Link parameter is missing"), 400
 
     try:
         if request.method == 'GET':
-            response = requests.get(link, cookies=session.get('cookies'))
+            response = requests.get(link)
         else:
-            print(session.get('cookies'))
-            print(request.form)
-
-            response = requests.post(
-                link, data=request.form, cookies=session.get('cookies'))
-
+            response = requests.post(link, data=request.form)
         response.raise_for_status()
-        # Update session cookies
-        session['cookies'] = response.cookies.get_dict()
+    except requests.exceptions.RequestException as e:
+        return jsonify(error=str(e)), 500
+
+    content_type = response.headers.get('Content-Type', '')
+    if 'application/json' in content_type:
+        return jsonify(response.json())
+    else:
+        return response.text
+
+
+@app.route('/relaybrpost')
+def relaybr():
+    link = "https://www.bitrefill.com/api/accounts/cart"
+    cart_id = request.args.get('cart_id')
+    slug = request.args.get('slug')
+    value = request.args.get('value')
+    count = request.args.get('count')
+    recipient = request.args.get('recipient')
+
+    try:
+        if slug and value and count:
+            sesh = requests.Session()
+
+            cookies = {
+                "cart_id": cart_id
+            }
+
+            if recipient:
+                payload = {
+                    "slug": slug,
+                    "count": count,
+                    "value": value,
+                    "recipient": recipient,
+                    "is_gift": False,
+                    "bill_payment_id": "",
+                    "bill_account_id": ""
+                }
+            else:
+                payload = {
+                    "slug": slug,
+                    "count": count,
+                    "value": value,
+                    "is_gift": False,
+                    "bill_payment_id": "",
+                    "bill_account_id": ""
+                }
+
+            sesh.cookies.update(cookies)
+            response = sesh.post(link, json=payload)
+        else:
+            response = requests.get(link)
+
     except requests.exceptions.RequestException as e:
         return jsonify(error=str(e)), 500
 
