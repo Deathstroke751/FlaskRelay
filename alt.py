@@ -20,9 +20,6 @@ def relay():
         if request.method == 'GET':
             response = requests.get(link, cookies=session.get('cookies'))
         else:
-            print(session.get('cookies'))
-            print(request.form)
-
             response = requests.post(
                 link, data=request.form, cookies=session.get('cookies'))
 
