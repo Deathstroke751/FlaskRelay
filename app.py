@@ -12,8 +12,7 @@ def index():
 
 @app.route('/relay', methods=['GET', 'POST'])
 def relay():
-    link = request.args.get(
-        'link') if request.method == 'GET' else request.form.get('link')
+    link = request.args.get('link')
     if not link:
         return jsonify(error="Link parameter is missing"), 400
 
